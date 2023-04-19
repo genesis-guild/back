@@ -1,0 +1,7 @@
+.eslitrc
+/node_modules
+/dist
+lint-staged.config.js
+.eslintrc.js
+tsconfig.json
+bin
