@@ -1,5 +1,5 @@
+import { AccountModule } from './account'
 import { AuthModule } from './auth'
 import { BadgeModule } from './badge'
-import { UserModule } from './user'
 
-export default [AuthModule, UserModule, BadgeModule]
+export default [AuthModule, AccountModule, BadgeModule]

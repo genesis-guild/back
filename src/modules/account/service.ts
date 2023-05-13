@@ -5,34 +5,30 @@ import { Model } from 'mongoose'
 
 import { LenderDto } from './dto/lender.dto'
 import { PlayerDto } from './dto/player.dto'
-import { UserDto } from './dto/user.dto'
+import { AccountDto } from './dto/user.dto'
 
 @Injectable()
-export class UserService {
+export class AccountService {
   constructor(
-    @InjectModel(UserDto.name) private userModel: Model<UserDto>,
+    @InjectModel(AccountDto.name) private userModel: Model<AccountDto>,
     @InjectModel(LenderDto.name) private lenderModel: Model<LenderDto>,
     @InjectModel(PlayerDto.name) private playerModel: Model<PlayerDto>,
     private readonly badgeService: BadgeService,
   ) {}
 
-  async getUser(accountId: string): Promise<UserDto | null> {
+  async getAccountInfo(accountId: string): Promise<AccountDto | null> {
     return await this.userModel
       .findOne({ accountId })
       .populate([{ path: 'player', populate: { path: 'badge' } }, 'lender'])
       .exec()
   }
 
-  async createUser(accountId: string): Promise<UserDto> {
+  async createAccount(accountId: string): Promise<AccountDto> {
     return await this.userModel.create({
       accountId,
       lender: await this.createLender(accountId),
       player: await this.createPlayer(accountId),
     })
-  }
-
-  async getLender(accountId: string): Promise<LenderDto | null> {
-    return await this.lenderModel.findOne({ accountId }).exec()
   }
 
   async createLender(accountId: string): Promise<LenderDto> {

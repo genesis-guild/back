@@ -8,7 +8,7 @@ import { LenderDto } from './lender.dto'
 import { PlayerDto } from './player.dto'
 
 @Schema()
-export class UserDto extends CoreSchema {
+export class AccountDto extends CoreSchema {
   @Prop()
   @Exclude()
   accountId: string
@@ -24,6 +24,6 @@ export class UserDto extends CoreSchema {
   player: PlayerDto
 }
 
-export const UserSchema = SchemaFactory.createForClass(UserDto)
+export const AccountSchema = SchemaFactory.createForClass(AccountDto)
 
-export type UserDocument = UserDto & Document
+export type AccountDocument = AccountDto & Document
