@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common'
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { BadgeService } from 'modules/badge'
 import { Model } from 'mongoose'
 
+import { AccountGameDto, CommonGameDto } from './dto/account-game.dto'
 import { LenderDto } from './dto/lender.dto'
 import { PlayerDto } from './dto/player.dto'
 import { AccountDto } from './dto/user.dto'
@@ -13,6 +14,8 @@ export class AccountService {
     @InjectModel(AccountDto.name) private userModel: Model<AccountDto>,
     @InjectModel(LenderDto.name) private lenderModel: Model<LenderDto>,
     @InjectModel(PlayerDto.name) private playerModel: Model<PlayerDto>,
+    @InjectModel(AccountGameDto.name)
+    private accountGameModel: Model<AccountGameDto>,
     private readonly badgeService: BadgeService,
   ) {}
 
@@ -40,5 +43,32 @@ export class AccountService {
       accountId,
       badge: await this.badgeService.createBadge(accountId),
     })
+  }
+
+  async getDashboardInfo(
+    accountId: string,
+    type: 'lender' | 'player',
+  ): Promise<Omit<CommonGameDto, 'accountId'>[]> {
+    return (await this.accountGameModel.find({ type, accountId }).exec()).map(
+      ({ gameId, name, type, socials }) => ({ gameId, name, type, socials }),
+    )
+  }
+
+  async getAccountGameInfo(
+    accountId: string,
+    type: 'lender' | 'player',
+    gameId: string,
+  ): Promise<AccountGameDto> {
+    const game = await this.accountGameModel.findOne({
+      accountId,
+      type,
+      gameId,
+    })
+
+    if (!game) {
+      throw new HttpException('Not found', HttpStatus.NOT_FOUND)
+    }
+
+    return game
   }
 }
