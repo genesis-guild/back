@@ -12,7 +12,9 @@ const appConfig = new DocumentBuilder()
 
 const server = async (): Promise<void> => {
   const PORT = process.env.PORT ?? 5000
-  const app = await NestFactory.create(AppModule, { cors: true })
+  const app = await NestFactory.create(AppModule, {
+    cors: true,
+  })
 
   const documentation = SwaggerModule.createDocument(app, appConfig)
 
