@@ -24,17 +24,27 @@
     "postpack": "pinst --enable"
   },
   "dependencies": {
+    "@metamask/sdk": "^0.2.4",
+    "@nestjs/axios": "^2.0.0",
+    "@nestjs/cache-manager": "^1.0.0",
     "@nestjs/common": "^9.4.0",
     "@nestjs/config": "^2.3.0",
     "@nestjs/core": "^9.4.0",
+    "@nestjs/jwt": "^10.0.3",
     "@nestjs/mongoose": "^9.2.2",
     "@nestjs/platform-express": "^9.0.0",
+    "@nestjs/platform-socket.io": "^9.4.1",
     "@nestjs/swagger": "^6.1.4",
+    "@nestjs/websockets": "^9.4.1",
     "alchemy-sdk": "^2.8.1",
+    "axios": "^1.4.0",
+    "cache-manager": "^5.2.1",
     "class-transformer": "^0.5.1",
+    "ethers": "^6.3.0",
     "mongoose": "^7.0.4",
     "reflect-metadata": "^0.1.13",
-    "rxjs": "^7.2.0"
+    "rxjs": "^7.2.0",
+    "web3": "^1.10.0"
   },
   "devDependencies": {
     "@darraghor/eslint-plugin-nestjs-typed": "^3.19.0",

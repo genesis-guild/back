@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common'
 import { MongooseModule } from '@nestjs/mongoose'
 import { BadgeModule } from 'modules/badge'
-import { ETHService } from 'services'
 
 import { AccountController } from './controller'
 import { AccountGameDto, AccountGameSchema } from './dto/account-game.dto'
@@ -22,7 +21,7 @@ export const Models = [
 @Module({
   imports: [...Models, BadgeModule],
   controllers: [AccountController],
-  providers: [ETHService, AccountService],
+  providers: [AccountService],
   exports: [AccountService, ...Models],
 })
 export class AccountModule {}
