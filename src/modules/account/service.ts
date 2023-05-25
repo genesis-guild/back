@@ -1,36 +1,60 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
+import {
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+  forwardRef,
+} from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
+import { AdminService } from 'modules/admin'
 import { BadgeService } from 'modules/badge'
+import { ChainService } from 'modules/chain'
+import { ChainType } from 'modules/chain/shared/types'
 import { Model } from 'mongoose'
+import { NftDto } from 'shared/dto/nft.dto'
 
-import { AccountGameDto, CommonGameDto } from './dto/account-game.dto'
-import { LenderDto } from './dto/lender.dto'
-import { PlayerDto } from './dto/player.dto'
-import { AccountDto } from './dto/user.dto'
+import {
+  AccountDto,
+  AccountGameDto,
+  AccountType,
+  BorrowerDto,
+  CommonGameDto,
+  LenderDto,
+} from './shared'
 
 @Injectable()
 export class AccountService {
   constructor(
     @InjectModel(AccountDto.name) private userModel: Model<AccountDto>,
     @InjectModel(LenderDto.name) private lenderModel: Model<LenderDto>,
-    @InjectModel(PlayerDto.name) private playerModel: Model<PlayerDto>,
+    @InjectModel(BorrowerDto.name) private borrowerModel: Model<BorrowerDto>,
     @InjectModel(AccountGameDto.name)
     private accountGameModel: Model<AccountGameDto>,
     private readonly badgeService: BadgeService,
+    @Inject(forwardRef(() => ChainService))
+    private readonly chainService: ChainService,
+    private readonly adminService: AdminService,
   ) {}
 
   async getAccountInfo(accountId: string): Promise<AccountDto | null> {
     return await this.userModel
       .findOne({ accountId })
-      .populate([{ path: 'player', populate: { path: 'badge' } }, 'lender'])
+      .populate([
+        { path: AccountType.BORROWER, populate: { path: 'badge' } },
+        AccountType.LENDER,
+      ])
       .exec()
   }
 
-  async createAccount(accountId: string): Promise<AccountDto> {
+  async createAccount(
+    accountId: string,
+    chainType: ChainType,
+  ): Promise<AccountDto> {
     return await this.userModel.create({
       accountId,
-      lender: await this.createLender(accountId),
-      player: await this.createPlayer(accountId),
+      [AccountType.LENDER]: await this.createLender(accountId),
+      [AccountType.BORROWER]: await this.createBorrower(accountId),
+      chainType,
     })
   }
 
@@ -38,8 +62,8 @@ export class AccountService {
     return await this.lenderModel.create({ accountId })
   }
 
-  async createPlayer(accountId: string): Promise<PlayerDto> {
-    return await this.playerModel.create({
+  async createBorrower(accountId: string): Promise<BorrowerDto> {
+    return await this.borrowerModel.create({
       accountId,
       badge: await this.badgeService.createBadge(accountId),
     })
@@ -47,7 +71,7 @@ export class AccountService {
 
   async getDashboardInfo(
     accountId: string,
-    type: 'lender' | 'player',
+    type: AccountType,
   ): Promise<Omit<CommonGameDto, 'accountId'>[]> {
     return (await this.accountGameModel.find({ type, accountId }).exec()).map(
       ({ gameId, name, type, socials }) => ({ gameId, name, type, socials }),
@@ -56,7 +80,7 @@ export class AccountService {
 
   async getAccountGameInfo(
     accountId: string,
-    type: 'lender' | 'player',
+    type: AccountType,
     gameId: string,
   ): Promise<AccountGameDto> {
     const game = await this.accountGameModel.findOne({
@@ -70,5 +94,18 @@ export class AccountService {
     }
 
     return game
+  }
+
+  async getOwnedNfts(accountId: string): Promise<NftDto[]> {
+    const chainNfts = await (
+      await this.chainService.getService(accountId)
+    ).getOwnedNfts(accountId)
+    const availableGamesContracts = (await this.adminService.getGames())
+      .map(({ nftContracts }) => nftContracts)
+      .flatMap(c => c.map(a => a.toLowerCase()))
+
+    return chainNfts.filter(({ contract: { address } }) => {
+      return availableGamesContracts.includes(address.toLowerCase())
+    })
   }
 }

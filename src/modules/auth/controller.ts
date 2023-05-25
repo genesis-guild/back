@@ -1,5 +1,6 @@
 import { Controller, Headers, Post } from '@nestjs/common'
 import { ApiHeader, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
+import { ChainType } from 'modules/chain/shared/types'
 
 import { AuthService } from './service'
 
@@ -17,7 +18,16 @@ export class AuthController {
     description: 'User account id',
     required: true,
   })
-  async login(@Headers('accountId') accountId: string): Promise<void> {
-    await this.authService.check(accountId)
+  @ApiHeader({
+    name: 'chainType',
+    enum: ChainType,
+    description: 'User account chain type',
+    required: true,
+  })
+  async login(
+    @Headers('accountId') accountId: string,
+    @Headers('chainType') chainType: ChainType,
+  ): Promise<void> {
+    await this.authService.check(accountId, chainType)
   }
 }

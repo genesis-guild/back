@@ -3,14 +3,16 @@ import { ApiProperty } from '@nestjs/swagger'
 import { Exclude } from 'class-transformer'
 import { CoreSchema } from 'shared/classes'
 
-@Schema()
+@Schema({
+  collection: 'badges',
+})
 export class BadgeDto extends CoreSchema {
-  @ApiProperty({ default: 'Player badge info?' })
-  @Prop({ default: 'Player badge info?' })
+  @ApiProperty({ default: 'Borrower badge info?' })
+  @Prop({ default: 'Borrower badge info?' })
   info: string
 
-  @ApiProperty({ default: 'Player badge' })
-  @Prop({ default: 'Player badge' })
+  @ApiProperty({ default: 'Borrower badge' })
+  @Prop({ default: 'Borrower badge' })
   name: string
 
   @ApiProperty({ default: false })

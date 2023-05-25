@@ -14,9 +14,13 @@ import {
 } from '@nestjs/swagger'
 import { MongooseClassSerializerInterceptor } from 'shared/interceptors'
 
-import { AccountGameDto, CommonGameDto } from './dto/account-game.dto'
-import { AccountDto } from './dto/user.dto'
 import { AccountService } from './service'
+import {
+  AccountDto,
+  AccountGameDto,
+  AccountType,
+  CommonGameDto,
+} from './shared'
 
 @UseInterceptors(MongooseClassSerializerInterceptor(AccountDto))
 @ApiTags('Account Controller')
@@ -56,13 +60,13 @@ export class AccountController {
   })
   @ApiParam({
     name: 'type',
-    enum: ['lender', 'player'],
-    description: 'dashboard type',
+    enum: AccountType,
+    description: 'Dashboard type',
     required: true,
   })
   @Get('dashboard/:type')
   async getDashboardInfo(
-    @Param('type') type: 'lender' | 'player',
+    @Param('type') type: AccountType,
     @Headers('accountId') accountId: string,
   ): Promise<Omit<CommonGameDto, 'accountId'>[]> {
     return await this.accountService.getDashboardInfo(accountId, type)
@@ -81,7 +85,7 @@ export class AccountController {
   })
   @ApiParam({
     name: 'type',
-    enum: ['lender', 'player'],
+    enum: AccountType,
     description: 'Dashboard type',
     required: true,
   })
@@ -92,10 +96,25 @@ export class AccountController {
   })
   @Get('dashboard/:type/:gameId')
   async getAccountGameInfo(
-    @Param('type') type: 'lender' | 'player',
-    @Param('gameId') gameId: 'lender' | 'player',
+    @Param('type') type: AccountType,
+    @Param('gameId') gameId: string,
     @Headers('accountId') accountId: string,
   ): Promise<AccountGameDto> {
     return await this.accountService.getAccountGameInfo(accountId, type, gameId)
+  }
+
+  @ApiOperation({ summary: 'Get account nfts' })
+  @ApiResponse({
+    status: 200,
+    description: 'Get account nfts',
+  })
+  @ApiHeader({
+    name: 'accountId',
+    description: 'User account id',
+    required: true,
+  })
+  @Get('nfts')
+  async getOwnedNfts(@Headers('accountId') accountId: string): Promise<any> {
+    return await this.accountService.getOwnedNfts(accountId)
   }
 }

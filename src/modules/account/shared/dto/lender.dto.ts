@@ -6,7 +6,9 @@ import { CoreSchema } from 'shared/classes'
 
 import { Tokens } from '../decorators/tokens'
 
-@Schema()
+@Schema({
+  collection: 'lenders',
+})
 export class LenderDto extends CoreSchema {
   @Prop()
   @Exclude()
