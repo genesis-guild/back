@@ -36,6 +36,7 @@ module.exports = {
         allowTypedFunctionExpressions: true,
       },
     ],
+    '@typescript-eslint/prefer-reduce-type-parameter': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'error',
     '@typescript-eslint/lines-between-class-members': [
       'error',

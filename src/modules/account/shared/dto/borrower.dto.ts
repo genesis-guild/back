@@ -5,10 +5,12 @@ import { BadgeDto } from 'modules/badge'
 import { Document, Schema as MSchema } from 'mongoose'
 import { CoreSchema } from 'shared/classes'
 
-import { Tokens } from '../decorators/tokens'
+import { Tokens } from '../decorators'
 
-@Schema()
-export class PlayerDto extends CoreSchema {
+@Schema({
+  collection: 'borrowers',
+})
+export class BorrowerDto extends CoreSchema {
   @Prop()
   @Exclude()
   accountId: string
@@ -33,6 +35,6 @@ export class PlayerDto extends CoreSchema {
   games: string[]
 }
 
-export const PlayerSchema = SchemaFactory.createForClass(PlayerDto)
+export const BorrowerSchema = SchemaFactory.createForClass(BorrowerDto)
 
-export type PlayerDocument = PlayerDto & Document
+export type BorrowerDocument = BorrowerDto & Document

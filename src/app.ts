@@ -3,6 +3,7 @@ import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { MongooseModule } from '@nestjs/mongoose'
 import Modules from 'modules'
+import { GlobalHttpModule } from 'shared/modules/globalHttpModule'
 
 @Module({
   imports: [
@@ -10,6 +11,7 @@ import Modules from 'modules'
       envFilePath: '.env',
     }),
     CacheModule.register({ isGlobal: true }),
+    GlobalHttpModule,
     ...Modules,
     MongooseModule.forRoot(process.env.DB_CONNECTION_URL!),
   ],

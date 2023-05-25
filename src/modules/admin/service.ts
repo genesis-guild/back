@@ -1,11 +1,17 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
+import { InjectModel } from '@nestjs/mongoose'
+import { Model } from 'mongoose'
+import { GameDto } from 'shared/dto/game.dto'
 
 import { AuthDto } from './dto/auth.dto'
 
 @Injectable()
 export class AdminService {
-  constructor(private readonly jwtService: JwtService) {}
+  constructor(
+    @InjectModel(GameDto.name) private gamesModel: Model<GameDto>,
+    private readonly jwtService: JwtService,
+  ) {}
 
   auth({ username, password }: AuthDto): string {
     if (
@@ -19,5 +25,13 @@ export class AdminService {
     }
 
     return this.jwtService.sign({ username })
+  }
+
+  async getGames(): Promise<GameDto[]> {
+    return await this.gamesModel.find().exec()
+  }
+
+  async addGame(gameDto: GameDto): Promise<GameDto> {
+    return await this.gamesModel.create(gameDto)
   }
 }

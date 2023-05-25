@@ -1,6 +1,8 @@
-import { Prop, Schema, SchemaFactory, raw } from '@nestjs/mongoose'
+import { Prop, SchemaFactory, raw } from '@nestjs/mongoose'
 import { ApiProperty } from '@nestjs/swagger'
 import { Exclude } from 'class-transformer'
+
+import { AccountType } from '../types'
 
 export class CommonGameDto {
   @Prop()
@@ -15,16 +17,15 @@ export class CommonGameDto {
   @Prop()
   name: string
 
-  @ApiProperty({ enum: ['lender', 'player'] })
-  @Prop({ enum: ['lender', 'player'] })
-  type: 'lender' | 'player'
+  @ApiProperty({ enum: AccountType })
+  @Prop({ enum: AccountType })
+  type: AccountType
 
   @ApiProperty()
   @Prop()
   socials: []
 }
 
-@Schema()
 export class AccountGameDto extends CommonGameDto {
   @ApiProperty({
     type: 'object',
