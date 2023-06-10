@@ -1,5 +1,6 @@
 import { Prop } from '@nestjs/mongoose'
 import { ApiProperty } from '@nestjs/swagger'
+import { ChainType } from 'modules/chain/shared/types'
 
 export class NftContractDto {
   @ApiProperty()
@@ -35,4 +36,12 @@ export class NftDto {
   @ApiProperty()
   @Prop()
   description: string
+
+  @ApiProperty({ enum: ChainType })
+  @Prop({ enum: ChainType })
+  chainType: ChainType
+
+  @ApiProperty()
+  @Prop()
+  owner: string
 }

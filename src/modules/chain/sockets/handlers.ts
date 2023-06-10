@@ -1,7 +1,9 @@
 import { SubscribeMessage, WebSocketGateway } from '@nestjs/websockets'
+import { ETH_MARKETPLACE_FEE } from 'shared/consts/chain'
 import { Socket } from 'socket.io'
 
 import { ChainService } from '../service'
+import { ListDto } from '../shared/dto/list.dto'
 import { EventNamePostfix } from '../shared/types'
 import { EventNameFactory } from '../shared/utils/event-name-factory'
 import { EmitterSockets } from './emitters'
@@ -20,7 +22,9 @@ export class HandlerSockets {
   ) {}
 
   @SubscribeMessage(enf.events.MINT)
-  async mintRentable(client: Socket, accountId: string): Promise<void> {
+  async mintRentable(client: Socket, data: [string]): Promise<void> {
+    const [accountId] = data
+
     if (!accountId) return
 
     const mintAbi = (await this.chainService.getService(accountId)).getMintAbi()
@@ -33,7 +37,17 @@ export class HandlerSockets {
   }
 
   @SubscribeMessage(enf.events.LIST)
-  list(): void {
-    return
+  async list(client: Socket, data: [string, ListDto]): Promise<void> {
+    const [accountId, listDto] = data
+
+    const service = await this.chainService.getService(accountId)
+    const listAbi = service.getListAbi(listDto)
+
+    this.emitters.signTransaction(client, {
+      from: accountId,
+      to: process.env.ETH_MARKETPLACE_CONTRACT!,
+      data: listAbi,
+      value: ETH_MARKETPLACE_FEE,
+    })
   }
 }

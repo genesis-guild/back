@@ -10,6 +10,7 @@ import { AdminService } from 'modules/admin'
 import { BadgeService } from 'modules/badge'
 import { ChainService } from 'modules/chain'
 import { ChainType } from 'modules/chain/shared/types'
+import { MarketService } from 'modules/market/service'
 import { Model } from 'mongoose'
 import { NftDto } from 'shared/dto/nft.dto'
 
@@ -34,15 +35,16 @@ export class AccountService {
     @Inject(forwardRef(() => ChainService))
     private readonly chainService: ChainService,
     private readonly adminService: AdminService,
+    private readonly marketService: MarketService,
   ) {}
 
   async getAccountInfo(accountId: string): Promise<AccountDto | null> {
     return await this.userModel
-      .findOne({ accountId })
-      .populate([
-        { path: AccountType.BORROWER, populate: { path: 'badge' } },
-        AccountType.LENDER,
-      ])
+      .findOne({ accountId: accountId.toLowerCase() })
+      // .populate([
+      //   { path: AccountType.BORROWER, populate: { path: 'badge' } },
+      //   AccountType.LENDER,
+      // ])
       .exec()
   }
 
@@ -51,9 +53,9 @@ export class AccountService {
     chainType: ChainType,
   ): Promise<AccountDto> {
     return await this.userModel.create({
-      accountId,
-      [AccountType.LENDER]: await this.createLender(accountId),
-      [AccountType.BORROWER]: await this.createBorrower(accountId),
+      accountId: accountId.toLowerCase(),
+      // [AccountType.LENDER]: await this.createLender(accountId),
+      // [AccountType.BORROWER]: await this.createBorrower(accountId),
       chainType,
     })
   }
@@ -97,15 +99,29 @@ export class AccountService {
   }
 
   async getOwnedNfts(accountId: string): Promise<NftDto[]> {
+    // get nfts on chain
     const chainNfts = await (
       await this.chainService.getService(accountId)
     ).getOwnedNfts(accountId)
-    const availableGamesContracts = (await this.adminService.getGames())
+
+    // get Games nft contracts
+    const availableGamesNftContracts = (await this.adminService.getGames())
       .map(({ nftContracts }) => nftContracts)
       .flatMap(c => c.map(a => a.toLowerCase()))
 
-    return chainNfts.filter(({ contract: { address } }) => {
-      return availableGamesContracts.includes(address.toLowerCase())
-    })
+    // get listings hash
+    const listingsHash = (await this.marketService.getAllListings()).map(
+      ({ hash }) => hash,
+    )
+
+    const abailableNfts = chainNfts
+      .filter(({ contract: { address } }) =>
+        availableGamesNftContracts.includes(address.toLowerCase()),
+      )
+      .filter(
+        nftDto => !listingsHash.includes(this.marketService.getNftHash(nftDto)),
+      )
+
+    return abailableNfts
   }
 }

@@ -31,6 +31,20 @@ export class AdminService {
     return await this.gamesModel.find().exec()
   }
 
+  async getGame(nftContractAddress: string): Promise<GameDto> {
+    const game = (await this.getGames()).find(({ nftContracts }) =>
+      nftContracts
+        .map(c => c.toLowerCase())
+        .includes(nftContractAddress.toLowerCase()),
+    )
+
+    if (!game) {
+      throw new HttpException('Game not found', HttpStatus.NOT_FOUND)
+    }
+
+    return game
+  }
+
   async addGame(gameDto: GameDto): Promise<GameDto> {
     return await this.gamesModel.create(gameDto)
   }

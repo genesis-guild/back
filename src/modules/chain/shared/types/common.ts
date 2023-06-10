@@ -1,5 +1,7 @@
 import { NftDto } from 'shared/dto/nft.dto'
 
+import { ListDto } from '../dto/list.dto'
+
 export enum ChainType {
   ETH = 'eth',
 }
@@ -20,9 +22,11 @@ export interface TransactionReqParamsType {
   from: string
   to: string
   data: string
+  value?: string
 }
 
 export interface CommonChainService {
   getMintAbi(): string
+  getListAbi(listDto: ListDto): string
   getOwnedNfts(accountId: string): Promise<NftDto[]>
 }

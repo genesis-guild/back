@@ -12,6 +12,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger'
+import { NftDto } from 'shared/dto/nft.dto'
 import { MongooseClassSerializerInterceptor } from 'shared/interceptors'
 
 import { AccountService } from './service'
@@ -114,7 +115,9 @@ export class AccountController {
     required: true,
   })
   @Get('nfts')
-  async getOwnedNfts(@Headers('accountId') accountId: string): Promise<any> {
+  async getOwnedNfts(
+    @Headers('accountId') accountId: string,
+  ): Promise<NftDto[]> {
     return await this.accountService.getOwnedNfts(accountId)
   }
 }
