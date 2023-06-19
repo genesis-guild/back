@@ -29,7 +29,7 @@ export class ChainService {
   ) {}
 
   async getService(accountId: string): Promise<ETHService> {
-    const chainType = (await this.accountService.getAccountInfo(accountId))
+    const chainType = (await this.accountService.getAccount(accountId))
       ?.chainType
 
     if (!chainType) {
