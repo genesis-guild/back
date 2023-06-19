@@ -2,7 +2,8 @@ import { SubscribeMessage, WebSocketGateway } from '@nestjs/websockets'
 import { Socket } from 'socket.io'
 
 import { ChainService } from '../service'
-import { EventNamePostfix } from '../shared/types'
+import { AuthService } from '../shared/services/authService'
+import { ChainType, EventNamePostfix } from '../shared/types'
 import { EventNameFactory } from '../shared/utils/event-name-factory'
 import { EmitterSockets } from './emitters'
 
@@ -17,6 +18,7 @@ export class HandlerSockets {
   constructor(
     private emitters: EmitterSockets,
     private chainService: ChainService,
+    private authService: AuthService,
   ) {}
 
   @SubscribeMessage(enf.events.MINT)
@@ -35,5 +37,20 @@ export class HandlerSockets {
   @SubscribeMessage(enf.events.LIST)
   list(): void {
     return
+  }
+
+  @SubscribeMessage(enf.events.LOGIN)
+  login(client: Socket, accountId: string): void {
+    this.authService.login(accountId, ChainType.ETH)
+  }
+
+  @SubscribeMessage(enf.events.MERGE)
+  merge(client: Socket, data: string[]): void {
+    const [currAccountId, newAccountId] = data
+
+    this.authService.merge(currAccountId, {
+      accountId: newAccountId,
+      chainType: ChainType.ETH,
+    })
   }
 }
