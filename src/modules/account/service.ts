@@ -7,7 +7,6 @@ import {
 } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { AdminService } from 'modules/admin'
-import { BadgeService } from 'modules/badge'
 import { ChainService } from 'modules/chain'
 import { ChainType } from 'modules/chain/shared/types'
 import { MarketService } from 'modules/market/service'
@@ -17,35 +16,50 @@ import { NftDto } from 'shared/dto/nft.dto'
 import {
   AccountDto,
   AccountGameDto,
-  AccountType,
-  BorrowerDto,
-  CommonGameDto,
-  LenderDto,
+  AccountInfo,
+  MergedAccountDto,
 } from './shared'
+import { collectAccountInfo } from './shared/utils/collect-account'
 
 @Injectable()
 export class AccountService {
   constructor(
     @InjectModel(AccountDto.name) private userModel: Model<AccountDto>,
-    @InjectModel(LenderDto.name) private lenderModel: Model<LenderDto>,
-    @InjectModel(BorrowerDto.name) private borrowerModel: Model<BorrowerDto>,
+    @InjectModel(MergedAccountDto.name)
+    private mergedAccountModel: Model<MergedAccountDto>,
     @InjectModel(AccountGameDto.name)
-    private accountGameModel: Model<AccountGameDto>,
-    private readonly badgeService: BadgeService,
     @Inject(forwardRef(() => ChainService))
     private readonly chainService: ChainService,
     private readonly adminService: AdminService,
     private readonly marketService: MarketService,
   ) {}
 
-  async getAccountInfo(accountId: string): Promise<AccountDto | null> {
-    return await this.userModel
+  async getAccountInfo(accountId: string): Promise<AccountInfo | null> {
+    const account = await this.getAccount(accountId)
+
+    if (!account) {
+      throw new HttpException('Account not found', HttpStatus.NOT_FOUND)
+    }
+
+    if (account.linked) {
+      const mergedAccount = await this.getMergedAccount(accountId)
+
+      if (!mergedAccount) {
+        throw new HttpException('Account not merged!', HttpStatus.NOT_FOUND)
+      }
+
+      return collectAccountInfo(mergedAccount.accounts)
+    }
+
+    return collectAccountInfo(account)
+  }
+
+  async getAccount(accountId: string): Promise<AccountDto | null> {
+    const account = await this.userModel
       .findOne({ accountId: accountId.toLowerCase() })
-      // .populate([
-      //   { path: AccountType.BORROWER, populate: { path: 'badge' } },
-      //   AccountType.LENDER,
-      // ])
       .exec()
+
+    return account
   }
 
   async createAccount(
@@ -54,48 +68,88 @@ export class AccountService {
   ): Promise<AccountDto> {
     return await this.userModel.create({
       accountId: accountId.toLowerCase(),
-      // [AccountType.LENDER]: await this.createLender(accountId),
-      // [AccountType.BORROWER]: await this.createBorrower(accountId),
       chainType,
     })
   }
 
-  async createLender(accountId: string): Promise<LenderDto> {
-    return await this.lenderModel.create({ accountId })
-  }
-
-  async createBorrower(accountId: string): Promise<BorrowerDto> {
-    return await this.borrowerModel.create({
-      accountId,
-      badge: await this.badgeService.createBadge(accountId),
-    })
-  }
-
-  async getDashboardInfo(
+  async getMergedAccount(
     accountId: string,
-    type: AccountType,
-  ): Promise<Omit<CommonGameDto, 'accountId'>[]> {
-    return (await this.accountGameModel.find({ type, accountId }).exec()).map(
-      ({ gameId, name, type, socials }) => ({ gameId, name, type, socials }),
+    populate = true,
+  ): Promise<MergedAccountDto | null> {
+    const mergedAccount = this.mergedAccountModel.findOne({
+      accountsIds: { $in: [accountId.toLowerCase()] },
+    })
+
+    if (populate) {
+      return await mergedAccount.populate('accounts').exec()
+    }
+
+    return await mergedAccount.exec()
+  }
+
+  async mergeAccounts(
+    currAccountId: string,
+    newAccountId: string,
+  ): Promise<void> {
+    const mergedAccount = await this.getMergedAccount(currAccountId, false)
+
+    if (mergedAccount) {
+      await this.addToMergedAccount(currAccountId, newAccountId)
+
+      return
+    }
+
+    const currAccount = await this.getAccount(currAccountId)
+    const newAccount = await this.getAccount(newAccountId)
+
+    if (!(currAccount && newAccount)) {
+      throw new HttpException('Smth went wrong', HttpStatus.FORBIDDEN)
+    }
+
+    await this.mergedAccountModel.create({
+      accountsIds: [currAccountId.toLowerCase(), newAccountId.toLowerCase()],
+      accounts: [currAccount, newAccount],
+    })
+
+    await this.changeLinkAccount(currAccountId, true)
+    await this.changeLinkAccount(newAccountId, true)
+  }
+
+  async unlinkAccount(accountId: string): Promise<void> {
+    const mergedAccount = await this.getMergedAccount(accountId)
+    const account = await this.getAccount(accountId)
+
+    if (!mergedAccount || !account) return
+
+    await this.mergedAccountModel.findOneAndUpdate(
+      { accountsIds: { $in: [accountId.toLowerCase()] } },
+      { $pull: { accounts: account, accountsIds: accountId.toLowerCase() } },
+    )
+
+    await this.changeLinkAccount(accountId, false)
+  }
+
+  async changeLinkAccount(accountId: string, linked: boolean): Promise<void> {
+    await this.userModel.findOneAndUpdate(
+      {
+        accountId: accountId.toLowerCase(),
+      },
+      { $set: { linked: linked } },
     )
   }
 
-  async getAccountGameInfo(
-    accountId: string,
-    type: AccountType,
-    gameId: string,
-  ): Promise<AccountGameDto> {
-    const game = await this.accountGameModel.findOne({
-      accountId,
-      type,
-      gameId,
-    })
+  async addToMergedAccount(
+    currAccountId: string,
+    newAccountId: string,
+  ): Promise<void> {
+    const newAccount = await this.getAccount(newAccountId)
 
-    if (!game) {
-      throw new HttpException('Not found', HttpStatus.NOT_FOUND)
-    }
+    await this.mergedAccountModel.findOneAndUpdate(
+      { accountsIds: { $in: [currAccountId.toLowerCase()] } },
+      { $addToSet: { accounts: newAccount, accountsIds: newAccountId } },
+    )
 
-    return game
+    await this.changeLinkAccount(newAccountId, true)
   }
 
   async getOwnedNfts(accountId: string): Promise<NftDto[]> {

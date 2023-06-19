@@ -12,17 +12,17 @@ import {
   AccountGameDto,
   AccountGameSchema,
   AccountSchema,
-  BorrowerDto,
-  BorrowerSchema,
-  LenderDto,
-  LenderSchema,
+  MergedAccountDto,
+  MergedAccountSchema,
 } from './shared'
 
 export const Models = [
   MongooseModule.forFeature([{ name: AccountDto.name, schema: AccountSchema }]),
-  MongooseModule.forFeature([{ name: LenderDto.name, schema: LenderSchema }]),
   MongooseModule.forFeature([
-    { name: BorrowerDto.name, schema: BorrowerSchema },
+    { name: MergedAccountDto.name, schema: MergedAccountSchema },
+  ]),
+  MongooseModule.forFeature([
+    { name: AccountGameDto.name, schema: AccountGameSchema },
   ]),
   MongooseModule.forFeature([
     { name: AccountGameDto.name, schema: AccountGameSchema },
