@@ -31,7 +31,7 @@ export class AdminController {
   }
 
   @ApiOperation({ summary: 'Get games' })
-  @ApiResponse({ status: 200, description: 'Get games' })
+  @ApiResponse({ status: 200, description: 'Get games', type: [GameDto] })
   @Get('games')
   getGames(): Promise<GameDto[]> {
     return this.adminService.getGames()

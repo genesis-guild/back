@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common'
 import { MongooseModule } from '@nestjs/mongoose'
+import { AdminModule } from 'modules/admin'
 import { ChainModule } from 'modules/chain'
 
 import { MarketController } from './controller'
@@ -15,9 +16,10 @@ import { MarketService } from './service'
       },
     ]),
     ChainModule,
+    AdminModule,
   ],
   controllers: [MarketController],
   providers: [MarketService],
-  exports: [],
+  exports: [MarketService],
 })
 export class MarketModule {}

@@ -3,6 +3,7 @@ import { MongooseModule } from '@nestjs/mongoose'
 import { AdminModule } from 'modules/admin'
 import { BadgeModule } from 'modules/badge'
 import { ChainModule } from 'modules/chain'
+import { MarketModule } from 'modules/market'
 
 import { AccountController } from './controller'
 import { AccountService } from './service'
@@ -29,7 +30,7 @@ export const Models = [
 ]
 
 @Module({
-  imports: [...Models, BadgeModule, ChainModule, AdminModule],
+  imports: [...Models, BadgeModule, ChainModule, AdminModule, MarketModule],
   controllers: [AccountController],
   providers: [AccountService],
   exports: [AccountService, ...Models],

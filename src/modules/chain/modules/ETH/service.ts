@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { Alchemy, Network } from 'alchemy-sdk'
+import { ListDto } from 'modules/chain/shared/dto/list.dto'
 import { AbiService } from 'modules/chain/shared/services/abiService'
 import { CommonChainService } from 'modules/chain/shared/types'
 import { getConfig } from 'modules/chain/shared/utils/alchemyConfig'
@@ -23,7 +24,23 @@ export class ETHService extends AbiService implements CommonChainService {
   getMintAbi(): string {
     const rentableContract = this.getContract(AbiType.RENTABLE_ABI)
 
-    return rentableContract.methods.mint('').encodeABI()
+    return rentableContract.methods.mint('asd').encodeABI()
+  }
+
+  getListAbi({ nftDto, pricePerDay, duration }: ListDto): string {
+    const marketContract = this.getContract(AbiType.MARKET_ABI)
+    const durationInSeconds = duration * 24 * 60 * 60
+    const delay = 5 * 60 // 5 mins delay
+
+    return marketContract.methods
+      .listNFT(
+        nftDto.contract.address, // should be
+        nftDto.tokenId,
+        pricePerDay,
+        Math.ceil(Date.now() / 1000) + delay,
+        Math.ceil(Date.now() / 1000) + durationInSeconds + delay,
+      )
+      .encodeABI()
   }
 
   async getOwnedNfts(accountId: string): Promise<NftDto[]> {
@@ -36,6 +53,7 @@ export class ETHService extends AbiService implements CommonChainService {
         title,
         description,
       }) => ({
+        chainType: this.chainType,
         contract: {
           address,
           name,
@@ -45,6 +63,7 @@ export class ETHService extends AbiService implements CommonChainService {
         tokenId,
         title,
         description,
+        owner: accountId,
       }),
     )
   }
@@ -77,6 +96,12 @@ export class ETHService extends AbiService implements CommonChainService {
         chainType: this.chainType,
       }),
     )
+  }
+
+  async getContractFee(abiType: AbiType): Promise<number> {
+    const marketContract = this.getContract(abiType)
+
+    return await marketContract.methods.getListingFee().call()
   }
 
   private getContract(abiType: AbiType): Contract {
