@@ -54,13 +54,24 @@ export class HandlerSockets {
   }
 
   @SubscribeMessage(enf.events.LOGIN)
-  login(client: Socket, accountId: string): void {
-    this.authService.login(accountId, ChainType.ETH)
+  login(
+    client: Socket,
+    data: { accountId: string; chainType: ChainType },
+  ): void {
+    const { accountId, chainType } = data
+
+    this.authService.login(accountId, chainType)
   }
 
   @SubscribeMessage(enf.events.MERGE)
-  merge(client: Socket, data: string[]): void {
-    const [currAccountId, newAccountId] = data
+  merge(
+    client: Socket,
+    data: {
+      currAccountId: string
+      newAccountId: string
+    },
+  ): void {
+    const { currAccountId, newAccountId } = data
 
     this.authService.merge(currAccountId, {
       accountId: newAccountId,
