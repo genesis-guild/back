@@ -4,11 +4,13 @@ import { ListDto } from 'modules/chain/shared/dto/list.dto'
 import { AbiService } from 'modules/chain/shared/services/abiService'
 import { CommonChainService } from 'modules/chain/shared/types'
 import { getConfig } from 'modules/chain/shared/utils/alchemyConfig'
+import { createMessageHash } from 'modules/chain/shared/utils/createMessageHash'
 import { NftDto } from 'shared/dto/nft.dto'
+import { recoverMessageAddress } from 'viem'
 import Web3 from 'web3'
 import { Contract } from 'web3-eth-contract'
 
-import { AbiType, ChainType } from '../../shared/types/common'
+import { AbiType, AccountWS, ChainType } from '../../shared/types/common'
 
 const alchemy = new Alchemy(getConfig(Network.ETH_GOERLI))
 
@@ -102,6 +104,19 @@ export class ETHService extends AbiService implements CommonChainService {
     const marketContract = this.getContract(abiType)
 
     return await marketContract.methods.getListingFee().call()
+  }
+
+  async verifyMessage(
+    signature: Uint8Array,
+    account: AccountWS,
+  ): Promise<boolean> {
+    // TODO: somehow protect signature, maybe Date?
+    const address = await recoverMessageAddress({
+      signature,
+      message: createMessageHash(account),
+    })
+
+    return address === account.accountId
   }
 
   private getContract(abiType: AbiType): Contract {
