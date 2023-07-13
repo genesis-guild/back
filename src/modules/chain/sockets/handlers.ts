@@ -55,12 +55,13 @@ export class HandlerSockets {
   }
 
   @SubscribeMessage(enf.events.LOGIN)
-  async login(client: Socket, data: AccountWS): Promise<void> {
-    const { accountId, chainType } = data
+  async login(client: Socket, account: AccountWS): Promise<void> {
+    const { accountId, chainType } = account
 
     await this.authService.login(accountId, chainType)
+    this.emitters.login(client, account)
 
-    this.emitters.signMessage(client, createMessageHash(data))
+    this.emitters.signMessage(client, createMessageHash(account))
   }
 
   @SubscribeMessage(enf.events.MERGE)

@@ -2,6 +2,7 @@ import { WebSocketGateway } from '@nestjs/websockets'
 import { Socket } from 'socket.io'
 
 import {
+  AccountWS,
   ChainType,
   EventNamePostfix,
   TransactionReqParamsType,
@@ -22,5 +23,9 @@ export class EmitterSockets {
 
   signMessage(client: Socket, message: string): void {
     client.emit(enf.events.SIGN_MESSAGE, message)
+  }
+
+  login(client: Socket, account: AccountWS): void {
+    client.emit(enf.events.LOGIN, account)
   }
 }
