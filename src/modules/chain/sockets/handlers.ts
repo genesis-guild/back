@@ -5,7 +5,8 @@ import { Socket } from 'socket.io'
 import { ChainService } from '../service'
 import { ListDto } from '../shared/dto/list.dto'
 import { AuthService } from '../shared/services/authService'
-import { ChainType, EventNamePostfix } from '../shared/types'
+import { AccountWS, ChainType, EventNamePostfix } from '../shared/types'
+import { createMessageHash } from '../shared/utils/createMessageHash'
 import { EventNameFactory } from '../shared/utils/event-name-factory'
 import { EmitterSockets } from './emitters'
 
@@ -54,13 +55,12 @@ export class HandlerSockets {
   }
 
   @SubscribeMessage(enf.events.LOGIN)
-  login(
-    client: Socket,
-    data: { accountId: string; chainType: ChainType },
-  ): void {
+  async login(client: Socket, data: AccountWS): Promise<void> {
     const { accountId, chainType } = data
 
-    this.authService.login(accountId, chainType)
+    await this.authService.login(accountId, chainType)
+
+    this.emitters.signMessage(client, createMessageHash(data))
   }
 
   @SubscribeMessage(enf.events.MERGE)
@@ -77,5 +77,17 @@ export class HandlerSockets {
       accountId: newAccountId,
       chainType: ChainType.ETH,
     })
+  }
+
+  @SubscribeMessage(enf.events.VERIFY_MESSAGE)
+  async verifyMessage(
+    client: Socket,
+    { signature, account }: { signature: Uint8Array; account: AccountWS },
+  ): Promise<void> {
+    const service = await this.chainService.getService(account.accountId)
+
+    // TODO: JWT token
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const isVerified = await service.verifyMessage(signature, account)
   }
 }

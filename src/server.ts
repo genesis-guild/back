@@ -7,7 +7,7 @@ const appConfig = new DocumentBuilder()
   .setDescription('Documentation')
   .setVersion('1.0.0')
   .addBearerAuth()
-  .setTitle('Aptos API')
+  .setTitle('API')
   .build()
 
 const server = async (): Promise<void> => {

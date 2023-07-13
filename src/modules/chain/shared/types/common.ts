@@ -29,4 +29,10 @@ export interface CommonChainService {
   getMintAbi(): string
   getListAbi(listDto: ListDto): string
   getOwnedNfts(accountId: string): Promise<NftDto[]>
+  verifyMessage(signature: Uint8Array, account: AccountWS): Promise<boolean>
+}
+
+export interface AccountWS {
+  chainType: ChainType
+  accountId: string
 }

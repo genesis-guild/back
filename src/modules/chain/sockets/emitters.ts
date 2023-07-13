@@ -19,4 +19,8 @@ export class EmitterSockets {
   signTransaction(client: Socket, reqParams: TransactionReqParamsType): void {
     client.emit(enf.events.SIGN_TRANSACTION, ChainType.ETH, reqParams)
   }
+
+  signMessage(client: Socket, message: string): void {
+    client.emit(enf.events.SIGN_MESSAGE, message)
+  }
 }
