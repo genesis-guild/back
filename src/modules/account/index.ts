@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common'
 import { MongooseModule } from '@nestjs/mongoose'
+
 import { AdminModule } from 'modules/admin'
 import { BadgeModule } from 'modules/badge'
 import { ChainModule } from 'modules/chain'

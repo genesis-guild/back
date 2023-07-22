@@ -1,8 +1,7 @@
+import { AccountWS } from 'shared/types'
 import { createHash } from 'shared/utils'
 
-import { AccountWS } from '../types'
-
-export const createMessageHash = ({
+export const createAccountHash = ({
   accountId,
   chainType,
 }: AccountWS): string => {

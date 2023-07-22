@@ -1,8 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { ApiProperty } from '@nestjs/swagger'
 import { Exclude, Type } from 'class-transformer'
-import { BadgeDto } from 'modules/badge'
 import { Document, Schema as MSchema } from 'mongoose'
+
+import { BadgeDto } from 'modules/badge'
+
 import { CoreSchema } from 'shared/classes'
 
 import { Tokens } from '../decorators'

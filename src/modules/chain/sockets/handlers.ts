@@ -1,12 +1,16 @@
 import { SubscribeMessage, WebSocketGateway } from '@nestjs/websockets'
-import { ETH_MARKETPLACE_FEE } from 'shared/consts/chain'
 import { Socket } from 'socket.io'
+
+import { AuthService } from 'modules/auth'
+
+import { ETH_MARKETPLACE_FEE } from 'shared/consts/chain'
+import { AccountWS, ChainType } from 'shared/types'
+import { createAccountHash } from 'shared/utils'
 
 import { ChainService } from '../service'
 import { ListDto } from '../shared/dto/list.dto'
-import { AuthService } from '../shared/services/authService'
-import { AccountWS, ChainType, EventNamePostfix } from '../shared/types'
-import { createMessageHash } from '../shared/utils/createMessageHash'
+import { AuthService as ChainAuthService } from '../shared/services/authService'
+import { EventNamePostfix } from '../shared/types'
 import { EventNameFactory } from '../shared/utils/event-name-factory'
 import { EmitterSockets } from './emitters'
 
@@ -21,6 +25,7 @@ export class HandlerSockets {
   constructor(
     private emitters: EmitterSockets,
     private chainService: ChainService,
+    private chainAuthService: ChainAuthService,
     private authService: AuthService,
   ) {}
 
@@ -30,7 +35,9 @@ export class HandlerSockets {
 
     if (!accountId) return
 
-    const mintAbi = (await this.chainService.getService(accountId)).getMintAbi()
+    const mintAbi = (
+      await this.chainService.getService(accountId)
+    )?.getMintAbi()
 
     this.emitters.signTransaction(client, {
       from: accountId,
@@ -44,7 +51,7 @@ export class HandlerSockets {
     const [accountId, listDto] = data
 
     const service = await this.chainService.getService(accountId)
-    const listAbi = service.getListAbi(listDto)
+    const listAbi = service?.getListAbi(listDto)
 
     this.emitters.signTransaction(client, {
       from: accountId,
@@ -58,10 +65,9 @@ export class HandlerSockets {
   async login(client: Socket, account: AccountWS): Promise<void> {
     const { accountId, chainType } = account
 
-    await this.authService.login(accountId, chainType)
-    this.emitters.login(client, account)
+    await this.chainAuthService.login(accountId, chainType)
 
-    this.emitters.signMessage(client, createMessageHash(account))
+    this.emitters.signMessage(client, createAccountHash(account))
   }
 
   @SubscribeMessage(enf.events.MERGE)
@@ -74,7 +80,7 @@ export class HandlerSockets {
   ): void {
     const { currAccountId, newAccountId } = data
 
-    this.authService.merge(currAccountId, {
+    this.chainAuthService.merge(currAccountId, {
       accountId: newAccountId,
       chainType: ChainType.ETH,
     })
@@ -87,8 +93,14 @@ export class HandlerSockets {
   ): Promise<void> {
     const service = await this.chainService.getService(account.accountId)
 
-    // TODO: JWT token
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const isVerified = await service.verifyMessage(signature, account)
+    const isVerified = await service?.verifyMessage(signature, account)
+
+    if (!isVerified) return
+
+    const tokens = await this.authService.generateTokens(
+      createAccountHash(account),
+    )
+
+    this.emitters.tokens(client, tokens, account)
   }
 }

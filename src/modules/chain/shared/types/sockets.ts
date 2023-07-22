@@ -6,6 +6,7 @@ export const ChainEventName = {
   MERGE: 'merge',
   SIGN_MESSAGE: 'sign_message',
   VERIFY_MESSAGE: 'verify_message',
+  TOKENS: 'tokens',
 } as const
 export type ChainEventName =
   (typeof ChainEventName)[keyof typeof ChainEventName]

@@ -1,16 +1,19 @@
 import { Injectable } from '@nestjs/common'
 import { Alchemy, Network } from 'alchemy-sdk'
-import { ListDto } from 'modules/chain/shared/dto/list.dto'
-import { AbiService } from 'modules/chain/shared/services/abiService'
-import { CommonChainService } from 'modules/chain/shared/types'
-import { getConfig } from 'modules/chain/shared/utils/alchemyConfig'
-import { createMessageHash } from 'modules/chain/shared/utils/createMessageHash'
-import { NftDto } from 'shared/dto/nft.dto'
 import { recoverMessageAddress } from 'viem'
 import Web3 from 'web3'
 import { Contract } from 'web3-eth-contract'
 
-import { AbiType, AccountWS, ChainType } from '../../shared/types/common'
+import { ListDto } from 'modules/chain/shared/dto/list.dto'
+import { AbiService } from 'modules/chain/shared/services/abiService'
+import { CommonChainService } from 'modules/chain/shared/types'
+import { getConfig } from 'modules/chain/shared/utils/alchemyConfig'
+
+import { NftDto } from 'shared/dto/nft.dto'
+import { AccountWS, ChainType } from 'shared/types'
+import { createAccountHash } from 'shared/utils'
+
+import { AbiType } from '../../shared/types/common'
 
 const alchemy = new Alchemy(getConfig(Network.ETH_GOERLI))
 
@@ -113,7 +116,7 @@ export class ETHService extends AbiService implements CommonChainService {
     // TODO: somehow protect signature, maybe Date?
     const address = await recoverMessageAddress({
       signature,
-      message: createMessageHash(account),
+      message: createAccountHash(account),
     })
 
     return address === account.accountId

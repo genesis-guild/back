@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { ApiProperty } from '@nestjs/swagger'
 import { Exclude } from 'class-transformer'
 import { Document } from 'mongoose'
+
 import { CoreSchema } from 'shared/classes'
 
 import { Tokens } from '../decorators/tokens'

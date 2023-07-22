@@ -4,7 +4,9 @@ import { AxiosError } from 'axios'
 import { catchError, firstValueFrom } from 'rxjs'
 import { AbiItem } from 'web3-utils'
 
-import { AbiType, ChainType } from '../types'
+import { ChainType } from 'shared/types'
+
+import { AbiType } from '../types'
 
 @Injectable()
 export class AbiService {

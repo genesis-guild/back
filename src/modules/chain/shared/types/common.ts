@@ -1,10 +1,7 @@
 import { NftDto } from 'shared/dto/nft.dto'
+import { AccountWS, ChainType } from 'shared/types'
 
 import { ListDto } from '../dto/list.dto'
-
-export enum ChainType {
-  ETH = 'eth',
-}
 
 export enum AbiType {
   MARKET_ABI = 'market_abi',
@@ -21,7 +18,7 @@ export const AbiContract: Record<ChainType, Record<AbiType, string>> = {
 export interface TransactionReqParamsType {
   from: string
   to: string
-  data: string
+  data: string | undefined
   value?: string
 }
 
@@ -30,9 +27,4 @@ export interface CommonChainService {
   getListAbi(listDto: ListDto): string
   getOwnedNfts(accountId: string): Promise<NftDto[]>
   verifyMessage(signature: Uint8Array, account: AccountWS): Promise<boolean>
-}
-
-export interface AccountWS {
-  chainType: ChainType
-  accountId: string
 }

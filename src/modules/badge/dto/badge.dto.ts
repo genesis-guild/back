@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { ApiProperty } from '@nestjs/swagger'
 import { Exclude } from 'class-transformer'
+
 import { CoreSchema } from 'shared/classes'
 
 @Schema({
