@@ -9,10 +9,9 @@
   "importOrderSortSpecifiers": true,
   "importOrderSeparation": true,
   "importOrder": [
-    "^@core/(.*)$",
     "<THIRD_PARTY_MODULES>",
-    "^@server/(.*)$",
-    "^@ui/(.*)$",
+    "^modules/(.*)$",
+    "^shared/(.*)$",
     "^[./]"
   ],
   "importOrderParserPlugins": [

@@ -6,12 +6,14 @@ import {
   forwardRef,
 } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
+import { Model } from 'mongoose'
+
 import { AdminService } from 'modules/admin'
 import { ChainService } from 'modules/chain'
-import { ChainType } from 'modules/chain/shared/types'
 import { MarketService } from 'modules/market/service'
-import { Model } from 'mongoose'
+
 import { NftDto } from 'shared/dto/nft.dto'
+import { ChainType } from 'shared/types'
 
 import {
   AccountDto,
@@ -154,9 +156,10 @@ export class AccountService {
 
   async getOwnedNfts(accountId: string): Promise<NftDto[]> {
     // get nfts on chain
-    const chainNfts = await (
-      await this.chainService.getService(accountId)
-    ).getOwnedNfts(accountId)
+    const chainNfts =
+      (await (
+        await this.chainService.getService(accountId)
+      )?.getOwnedNfts(accountId)) ?? []
 
     // get Games nft contracts
     const availableGamesNftContracts = (await this.adminService.getGames())

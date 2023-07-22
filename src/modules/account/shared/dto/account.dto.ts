@@ -1,8 +1,9 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { ApiProperty } from '@nestjs/swagger'
 import { Type } from 'class-transformer'
-import { ChainType } from 'modules/chain/shared/types'
 import { Document, Schema as MSchema } from 'mongoose'
+
+import { ChainType } from 'shared/types'
 
 export class AccountInfo {
   @ApiProperty({ default: false })

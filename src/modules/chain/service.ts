@@ -7,10 +7,13 @@ import {
   Optional,
   forwardRef,
 } from '@nestjs/common'
+
 import { AccountService } from 'modules/account'
 
+import { ChainType } from 'shared/types'
+
 import { ETHService } from './modules/ETH'
-import { AbiType, ChainType } from './shared/types/common'
+import { AbiType } from './shared/types/common'
 
 @Injectable()
 export class ChainService {
@@ -28,7 +31,7 @@ export class ChainService {
     @Optional() private readonly logger = new Logger(ChainService.name),
   ) {}
 
-  async getService(accountId: string): Promise<ETHService> {
+  async getService(accountId: string): Promise<ETHService | undefined> {
     const chainType = (await this.accountService.getAccount(accountId))
       ?.chainType
 

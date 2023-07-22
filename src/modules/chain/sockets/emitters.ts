@@ -1,12 +1,9 @@
 import { WebSocketGateway } from '@nestjs/websockets'
 import { Socket } from 'socket.io'
 
-import {
-  AccountWS,
-  ChainType,
-  EventNamePostfix,
-  TransactionReqParamsType,
-} from '../shared/types'
+import { AccountWS, ChainType, Tokens } from 'shared/types'
+
+import { EventNamePostfix, TransactionReqParamsType } from '../shared/types'
 import { EventNameFactory } from '../shared/utils/event-name-factory'
 
 const enf = new EventNameFactory(EventNamePostfix.EMITTER_POSTFIX)
@@ -27,5 +24,9 @@ export class EmitterSockets {
 
   login(client: Socket, account: AccountWS): void {
     client.emit(enf.events.LOGIN, account)
+  }
+
+  tokens(client: Socket, tokens: Tokens, account: AccountWS): void {
+    client.emit(enf.events.TOKENS, { tokens, account })
   }
 }

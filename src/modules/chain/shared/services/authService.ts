@@ -1,6 +1,8 @@
 import { Inject, Injectable, forwardRef } from '@nestjs/common'
+
 import { AccountService } from 'modules/account'
-import { ChainType } from 'modules/chain/shared/types'
+
+import { ChainType } from 'shared/types'
 
 @Injectable()
 export class AuthService {
