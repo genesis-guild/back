@@ -21,15 +21,15 @@ export class AccountController {
     type: AccountDto,
   })
   @ApiHeader({
-    name: 'accountId',
+    name: 'address',
     description: 'User account id',
     required: true,
   })
   @Get()
   async getAccountInfo(
-    @Headers('accountId') accountId: string,
+    @Headers('address') address: string,
   ): Promise<AccountInfo | null> {
-    return await this.accountService.getAccountInfo(accountId)
+    return await this.accountService.getAccountInfo(address)
   }
 
   @ApiOperation({ summary: 'Get account nfts' })
@@ -38,14 +38,16 @@ export class AccountController {
     description: 'Get account nfts',
   })
   @ApiHeader({
-    name: 'accountId',
+    name: 'address',
     description: 'User account id',
     required: true,
   })
   @Get('nfts')
-  async getOwnedNfts(
-    @Headers('accountId') accountId: string,
-  ): Promise<NftDto[]> {
-    return await this.accountService.getOwnedNfts(accountId)
+  // TODO: implement
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  getOwnedNfts(@Headers('address') address: string): NftDto[] {
+    // return await this.accountService.getOwnedNfts(address)
+
+    return []
   }
 }

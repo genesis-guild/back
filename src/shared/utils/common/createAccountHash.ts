@@ -1,12 +1,9 @@
-import { AccountWS } from 'shared/types'
+import { Account } from 'shared/types'
 import { createHash } from 'shared/utils'
 
-export const createAccountHash = ({
-  accountId,
-  chainType,
-}: AccountWS): string => {
+export const createAccountHash = ({ address, chainType }: Account): string => {
   return createHash({
-    accountId: accountId.toLowerCase(),
+    address: address.toLowerCase(),
     chainType,
     secret: process.env.ENCRYPT_KEY,
   })

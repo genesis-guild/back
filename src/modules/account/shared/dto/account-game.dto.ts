@@ -7,7 +7,7 @@ import { AccountType } from '../types'
 export class CommonGameDto {
   @Prop()
   @Exclude()
-  accountId: string
+  address: string
 
   @ApiProperty()
   @Prop()

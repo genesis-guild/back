@@ -1,5 +1,5 @@
 import { NftDto } from 'shared/dto/nft.dto'
-import { AccountWS, ChainType } from 'shared/types'
+import { Account, ChainType } from 'shared/types'
 
 import { ListDto } from '../dto/list.dto'
 
@@ -25,6 +25,6 @@ export interface TransactionReqParamsType {
 export interface CommonChainService {
   getMintAbi(): string
   getListAbi(listDto: ListDto): string
-  getOwnedNfts(accountId: string): Promise<NftDto[]>
-  verifyMessage(signature: Uint8Array, account: AccountWS): Promise<boolean>
+  getOwnedNfts(address: string): Promise<NftDto[]>
+  verifyMessage(signature: Uint8Array, account: Account): Promise<boolean>
 }

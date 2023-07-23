@@ -1,7 +1,7 @@
 import { WebSocketGateway } from '@nestjs/websockets'
 import { Socket } from 'socket.io'
 
-import { AccountWS, ChainType, Tokens } from 'shared/types'
+import { Account, ChainType, Tokens } from 'shared/types'
 
 import { EventNamePostfix, TransactionReqParamsType } from '../shared/types'
 import { EventNameFactory } from '../shared/utils/event-name-factory'
@@ -22,11 +22,11 @@ export class EmitterSockets {
     client.emit(enf.events.SIGN_MESSAGE, message)
   }
 
-  login(client: Socket, account: AccountWS): void {
+  login(client: Socket, account: Account): void {
     client.emit(enf.events.LOGIN, account)
   }
 
-  tokens(client: Socket, tokens: Tokens, account: AccountWS): void {
+  tokens(client: Socket, tokens: Tokens, account: Account): void {
     client.emit(enf.events.TOKENS, { tokens, account })
   }
 }

@@ -13,7 +13,7 @@ import { Tokens } from '../decorators/tokens'
 export class LenderDto extends CoreSchema {
   @Prop()
   @Exclude()
-  accountId: string
+  address: string
 
   @Tokens()
   totalEarnings: { token: string; amount: number }[]

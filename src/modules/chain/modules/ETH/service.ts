@@ -10,7 +10,7 @@ import { CommonChainService } from 'modules/chain/shared/types'
 import { getConfig } from 'modules/chain/shared/utils/alchemyConfig'
 
 import { NftDto } from 'shared/dto/nft.dto'
-import { AccountWS, ChainType } from 'shared/types'
+import { Account, ChainType } from 'shared/types'
 import { createAccountHash } from 'shared/utils'
 
 import { AbiType } from '../../shared/types/common'
@@ -48,8 +48,8 @@ export class ETHService extends AbiService implements CommonChainService {
       .encodeABI()
   }
 
-  async getOwnedNfts(accountId: string): Promise<NftDto[]> {
-    const nfts = await alchemy.nft.getNftsForOwner(accountId)
+  async getOwnedNfts(address: string): Promise<NftDto[]> {
+    const nfts = await alchemy.nft.getNftsForOwner(address)
 
     return nfts.ownedNfts.map(
       ({
@@ -68,7 +68,7 @@ export class ETHService extends AbiService implements CommonChainService {
         tokenId,
         title,
         description,
-        owner: accountId,
+        owner: address,
       }),
     )
   }
@@ -111,7 +111,7 @@ export class ETHService extends AbiService implements CommonChainService {
 
   async verifyMessage(
     signature: Uint8Array,
-    account: AccountWS,
+    account: Account,
   ): Promise<boolean> {
     // TODO: somehow protect signature, maybe Date?
     const address = await recoverMessageAddress({
@@ -119,7 +119,7 @@ export class ETHService extends AbiService implements CommonChainService {
       message: createAccountHash(account),
     })
 
-    return address === account.accountId
+    return address === account.address
   }
 
   private getContract(abiType: AbiType): Contract {

@@ -17,14 +17,14 @@ export class BadgeController {
   })
   @Get()
   @ApiHeader({
-    name: 'accountId',
+    name: 'address',
     description: 'User account id',
     required: true,
   })
   async getUserBadges(
-    @Headers('accountId') accountId: string,
+    @Headers('address') address: string,
   ): Promise<BadgeDto | null> {
-    return await this.badgeSerivce.getUserBadge(accountId)
+    return await this.badgeSerivce.getUserBadge(address)
   }
 
   @ApiOperation({ summary: 'Mint badge' })
@@ -34,11 +34,11 @@ export class BadgeController {
   })
   @Post('mint')
   @ApiHeader({
-    name: 'accountId',
+    name: 'address',
     description: 'User account id',
     required: true,
   })
-  mintBadge(@Headers('accountId') accountId: string): string {
-    return `Mint badge for ${accountId}!`
+  mintBadge(@Headers('address') address: string): string {
+    return `Mint badge for ${address}!`
   }
 }
