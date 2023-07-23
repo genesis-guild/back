@@ -2,7 +2,7 @@ export enum ChainType {
   ETH = 'eth',
 }
 
-export interface AccountWS {
+export interface Account {
   chainType: ChainType
-  accountId: string
+  address: string
 }

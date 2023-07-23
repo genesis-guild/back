@@ -15,7 +15,7 @@ import { Tokens } from '../decorators'
 export class BorrowerDto extends CoreSchema {
   @Prop()
   @Exclude()
-  accountId: string
+  address: string
 
   @ApiProperty()
   @Prop({ type: MSchema.Types.ObjectId, ref: BadgeDto.name })

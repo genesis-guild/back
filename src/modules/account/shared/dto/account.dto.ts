@@ -17,7 +17,7 @@ export class AccountInfo {
 export class AccountDto extends AccountInfo {
   @ApiProperty()
   @Prop()
-  accountId: string
+  address: string
 
   @ApiProperty({ enum: ChainType })
   @Prop({ enum: ChainType })

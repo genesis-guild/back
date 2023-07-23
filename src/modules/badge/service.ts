@@ -10,11 +10,11 @@ export class BadgeService {
     @InjectModel(BadgeDto.name) private badgeModel: Model<BadgeDto>,
   ) {}
 
-  async getUserBadge(accountId: string): Promise<BadgeDto | null> {
-    return await this.badgeModel.findOne({ accountId }).exec()
+  async getUserBadge(address: string): Promise<BadgeDto | null> {
+    return await this.badgeModel.findOne({ address }).exec()
   }
 
-  async createBadge(accountId: string): Promise<BadgeDto> {
-    return await this.badgeModel.create({ accountId })
+  async createBadge(address: string): Promise<BadgeDto> {
+    return await this.badgeModel.create({ address })
   }
 }

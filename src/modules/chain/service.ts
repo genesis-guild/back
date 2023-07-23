@@ -1,6 +1,4 @@
 import {
-  HttpException,
-  HttpStatus,
   Inject,
   Injectable,
   Logger,
@@ -10,7 +8,7 @@ import {
 
 import { AccountService } from 'modules/account'
 
-import { ChainType } from 'shared/types'
+import { Account, ChainType } from 'shared/types'
 
 import { ETHService } from './modules/ETH'
 import { AbiType } from './shared/types/common'
@@ -26,22 +24,11 @@ export class ChainService {
 
   constructor(
     @Inject(forwardRef(() => AccountService))
-    private accountService: AccountService,
     private readonly ethService: ETHService,
     @Optional() private readonly logger = new Logger(ChainService.name),
   ) {}
 
-  async getService(accountId: string): Promise<ETHService | undefined> {
-    const chainType = (await this.accountService.getAccount(accountId))
-      ?.chainType
-
-    if (!chainType) {
-      throw new HttpException(
-        `User ${accountId} not found`,
-        HttpStatus.BAD_REQUEST,
-      )
-    }
-
+  getService(chainType: Account['chainType']): ETHService {
     switch (chainType) {
       case ChainType.ETH:
         return this.ethService

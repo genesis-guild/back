@@ -36,15 +36,15 @@ export class AccountService {
     private readonly marketService: MarketService,
   ) {}
 
-  async getAccountInfo(accountId: string): Promise<AccountInfo | null> {
-    const account = await this.getAccount(accountId)
+  async getAccountInfo(address: string): Promise<AccountInfo | null> {
+    const account = await this.getAccount(address)
 
     if (!account) {
       throw new HttpException('Account not found', HttpStatus.NOT_FOUND)
     }
 
     if (account.linked) {
-      const mergedAccount = await this.getMergedAccount(accountId)
+      const mergedAccount = await this.getMergedAccount(address)
 
       if (!mergedAccount) {
         throw new HttpException('Account not merged!', HttpStatus.NOT_FOUND)
@@ -56,30 +56,30 @@ export class AccountService {
     return collectAccountInfo(account)
   }
 
-  async getAccount(accountId: string): Promise<AccountDto | null> {
+  async getAccount(address: string): Promise<AccountDto | null> {
     const account = await this.userModel
-      .findOne({ accountId: accountId.toLowerCase() })
+      .findOne({ address: address.toLowerCase() })
       .exec()
 
     return account
   }
 
   async createAccount(
-    accountId: string,
+    address: string,
     chainType: ChainType,
   ): Promise<AccountDto> {
     return await this.userModel.create({
-      accountId: accountId.toLowerCase(),
+      address: address.toLowerCase(),
       chainType,
     })
   }
 
   async getMergedAccount(
-    accountId: string,
+    address: string,
     populate = true,
   ): Promise<MergedAccountDto | null> {
     const mergedAccount = this.mergedAccountModel.findOne({
-      accountsIds: { $in: [accountId.toLowerCase()] },
+      accountsIds: { $in: [address.toLowerCase()] },
     })
 
     if (populate) {
@@ -117,24 +117,24 @@ export class AccountService {
     await this.changeLinkAccount(newAccountId, true)
   }
 
-  async unlinkAccount(accountId: string): Promise<void> {
-    const mergedAccount = await this.getMergedAccount(accountId)
-    const account = await this.getAccount(accountId)
+  async unlinkAccount(address: string): Promise<void> {
+    const mergedAccount = await this.getMergedAccount(address)
+    const account = await this.getAccount(address)
 
     if (!mergedAccount || !account) return
 
     await this.mergedAccountModel.findOneAndUpdate(
-      { accountsIds: { $in: [accountId.toLowerCase()] } },
-      { $pull: { accounts: account, accountsIds: accountId.toLowerCase() } },
+      { accountsIds: { $in: [address.toLowerCase()] } },
+      { $pull: { accounts: account, accountsIds: address.toLowerCase() } },
     )
 
-    await this.changeLinkAccount(accountId, false)
+    await this.changeLinkAccount(address, false)
   }
 
-  async changeLinkAccount(accountId: string, linked: boolean): Promise<void> {
+  async changeLinkAccount(address: string, linked: boolean): Promise<void> {
     await this.userModel.findOneAndUpdate(
       {
-        accountId: accountId.toLowerCase(),
+        address: address.toLowerCase(),
       },
       { $set: { linked: linked } },
     )
@@ -154,31 +154,31 @@ export class AccountService {
     await this.changeLinkAccount(newAccountId, true)
   }
 
-  async getOwnedNfts(accountId: string): Promise<NftDto[]> {
-    // get nfts on chain
-    const chainNfts =
-      (await (
-        await this.chainService.getService(accountId)
-      )?.getOwnedNfts(accountId)) ?? []
+  getOwnedNfts(): NftDto[] {
+    // // get nfts on chain
+    // const chainNfts = []
+    // // (await (
+    // //   await this.chainService.getService(address)
+    // // )?.getOwnedNfts(address)) ?? []
 
-    // get Games nft contracts
-    const availableGamesNftContracts = (await this.adminService.getGames())
-      .map(({ nftContracts }) => nftContracts)
-      .flatMap(c => c.map(a => a.toLowerCase()))
+    // // get Games nft contracts
+    // const availableGamesNftContracts = (await this.adminService.getGames())
+    //   .map(({ nftContracts }) => nftContracts)
+    //   .flatMap(c => c.map(a => a.toLowerCase()))
 
-    // get listings hash
-    const listingsHash = (await this.marketService.getAllListings()).map(
-      ({ hash }) => hash,
-    )
+    // // get listings hash
+    // const listingsHash = (await this.marketService.getAllListings()).map(
+    //   ({ hash }) => hash,
+    // )
 
-    const abailableNfts = chainNfts
-      .filter(({ contract: { address } }) =>
-        availableGamesNftContracts.includes(address.toLowerCase()),
-      )
-      .filter(
-        nftDto => !listingsHash.includes(this.marketService.getNftHash(nftDto)),
-      )
+    // const abailableNfts = chainNfts
+    //   .filter(({ contract: { address } }) =>
+    //     availableGamesNftContracts.includes(address.toLowerCase()),
+    //   )
+    //   .filter(
+    //     nftDto => !listingsHash.includes(this.marketService.getNftHash(nftDto)),
+    //   )
 
-    return abailableNfts
+    return []
   }
 }

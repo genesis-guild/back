@@ -30,7 +30,7 @@ export class BadgeDto extends CoreSchema {
 
   @Prop()
   @Exclude()
-  accountId: string
+  address: string
 }
 
 export const BadgeSchema = SchemaFactory.createForClass(BadgeDto)
