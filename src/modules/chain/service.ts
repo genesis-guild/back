@@ -1,12 +1,4 @@
-import {
-  Inject,
-  Injectable,
-  Logger,
-  Optional,
-  forwardRef,
-} from '@nestjs/common'
-
-import { AccountService } from 'modules/account'
+import { Injectable, Logger, Optional } from '@nestjs/common'
 
 import { Account, ChainType } from 'shared/types'
 
@@ -23,7 +15,6 @@ export class ChainService {
   }
 
   constructor(
-    @Inject(forwardRef(() => AccountService))
     private readonly ethService: ETHService,
     @Optional() private readonly logger = new Logger(ChainService.name),
   ) {}
