@@ -1,12 +1,14 @@
+import { HttpException, HttpStatus, UseGuards } from '@nestjs/common'
 import { SubscribeMessage, WebSocketGateway } from '@nestjs/websockets'
 import { Socket } from 'socket.io'
 
 import { AuthService } from 'modules/auth'
 
-import { Account, ChainType } from 'shared/types'
+import { ChainType } from 'shared/types'
 import { createAccountHash } from 'shared/utils'
 
 import { ChainService } from '../service'
+import { AccountGuard } from '../shared/decorators/auth.guards'
 import { ListDto } from '../shared/dto/list.dto'
 import { AuthService as ChainAuthService } from '../shared/services/authService'
 import { Data, EventNamePostfix } from '../shared/types'
@@ -44,10 +46,15 @@ export class HandlerSockets {
   }
 
   @SubscribeMessage(enf.events.LOGIN)
-  async login(client: Socket, { data }: Data<Account>): Promise<void> {
-    await this.chainAuthService.login(data)
+  @UseGuards(AccountGuard)
+  async login(client: Socket, { auth }: Data): Promise<void> {
+    await this.chainAuthService.login(auth.account)
 
-    this.emitters.signMessage(client, createAccountHash(data))
+    const isAtVerified = this.authService.verifyAT(auth)
+
+    if (!isAtVerified) {
+      this.emitters.signMessage(client, createAccountHash(auth.account))
+    }
   }
 
   @SubscribeMessage(enf.events.MERGE)
@@ -67,18 +74,17 @@ export class HandlerSockets {
   }
 
   @SubscribeMessage(enf.events.VERIFY_MESSAGE)
+  @UseGuards(AccountGuard)
   async verifyMessage(
     client: Socket,
-    {
-      data: { signature, account },
-    }: Data<{ signature: Uint8Array; account: Account }>,
+    { data: { signature }, auth: { account } }: Data<{ signature: Uint8Array }>,
   ): Promise<void> {
     const service = this.chainService.getService(account.chainType)
-
     const isVerified = await service.verifyMessage(signature, account)
 
-    if (!isVerified) return
-
+    if (!isVerified) {
+      throw new HttpException('Wrong signature', HttpStatus.UNAUTHORIZED)
+    }
     const tokens = await this.authService.generateTokens(
       createAccountHash(account),
     )
