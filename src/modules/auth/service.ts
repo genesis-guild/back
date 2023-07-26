@@ -3,8 +3,11 @@ import { JwtService } from '@nestjs/jwt'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 
+import { Data } from 'modules/chain/shared/types'
+
 import { REFRESH_TOKEN_EXPIRES } from 'shared/consts'
 import { Tokens } from 'shared/types'
+import { createAccountHash } from 'shared/utils'
 
 import { AuthAccountDto } from './dto/auth-account.dto'
 
@@ -36,6 +39,18 @@ export class AuthService {
     const tokens = await this.generateTokens(authAccount.hash)
 
     return tokens
+  }
+
+  verifyAT(auth: Data['auth']): boolean {
+    if (!auth.at) return false
+
+    try {
+      const sign = this.jwtService.verify<{ hash: string }>(auth.at)
+
+      return sign.hash === createAccountHash(auth.account)
+    } catch (e) {
+      return false
+    }
   }
 
   async generateTokens(hash: string): Promise<Tokens> {

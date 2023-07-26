@@ -22,6 +22,6 @@ export interface Data<D = undefined> {
   data: D
   auth: {
     at: string | undefined
-    account: Account | undefined
+    account: Account
   }
 }
