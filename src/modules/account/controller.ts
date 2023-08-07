@@ -1,8 +1,10 @@
 import { Controller, Get, Headers, UseInterceptors } from '@nestjs/common'
 import { ApiHeader, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 
+import { ExecuteHeaders } from 'shared/decorators'
 import { NftDto } from 'shared/dto/nft.dto'
 import { MongooseClassSerializerInterceptor } from 'shared/interceptors'
+import { Account } from 'shared/types'
 
 import { AccountService } from './service'
 import { AccountDto, AccountInfo } from './shared'
@@ -49,5 +51,17 @@ export class AccountController {
     // return await this.accountService.getOwnedNfts(address)
 
     return []
+  }
+
+  @ApiOperation({ summary: 'Is account new' })
+  @ApiResponse({
+    status: 200,
+    description: 'Is account new',
+  })
+  @Get('isAccountNew')
+  async isAccountNew(@ExecuteHeaders('account') account: Account): Promise<{
+    isNew: boolean
+  }> {
+    return await this.accountService.isNew(account.address)
   }
 }

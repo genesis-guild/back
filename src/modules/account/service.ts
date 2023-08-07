@@ -56,6 +56,16 @@ export class AccountService {
     return collectAccountInfo(account)
   }
 
+  async isNew(address: string): Promise<{
+    isNew: boolean
+  }> {
+    const account = await this.getAccount(address)
+
+    return {
+      isNew: !account,
+    }
+  }
+
   async getAccount(address: string): Promise<AccountDto | null> {
     const account = await this.userModel
       .findOne({ address: address.toLowerCase() })

@@ -4,7 +4,7 @@ import { Socket } from 'socket.io'
 
 import { AuthService } from 'modules/auth'
 
-import { ChainType } from 'shared/types'
+import { Account, SessionAccounts } from 'shared/types'
 import { createAccountHash } from 'shared/utils'
 
 import { ChainService } from '../service'
@@ -17,6 +17,7 @@ import { EmitterSockets } from './emitters'
 
 const enf = new EventNameFactory(EventNamePostfix.HANDLER_POSTFIX)
 
+// TODO: error handling
 @WebSocketGateway({
   cors: {
     origin: process.env.CLIENT_URL,
@@ -47,30 +48,43 @@ export class HandlerSockets {
 
   @SubscribeMessage(enf.events.LOGIN)
   @UseGuards(AccountGuard)
-  async login(client: Socket, { auth }: Data): Promise<void> {
-    await this.chainAuthService.login(auth.account)
-
+  login(
+    client: Socket,
+    { auth }: Data<{ sessionAccounts: SessionAccounts }>,
+  ): void {
     const isAtVerified = this.authService.verifyAT(auth)
 
     if (!isAtVerified) {
-      this.emitters.signMessage(client, createAccountHash(auth.account))
+      this.emitters.signMessage(
+        client,
+        auth.account,
+        createAccountHash(auth.account),
+      )
+    }
+
+    if (isAtVerified) {
+      this.emitters.loggedIn(client, auth.account)
     }
   }
 
   @SubscribeMessage(enf.events.MERGE)
-  merge(
+  async merge(
     client: Socket,
-    data: {
-      currAccountId: string
-      newAccountId: string
-    },
-  ): void {
-    const { currAccountId, newAccountId } = data
+    {
+      data,
+      auth: { account, at },
+    }: Data<{
+      sessionAccount: Account
+      authSessionAccount: string | undefined
+    }>,
+  ): Promise<void> {
+    this.verifyToken({ account, at })
 
-    this.chainAuthService.merge(currAccountId, {
-      address: newAccountId,
-      chainType: ChainType.ETH,
-    })
+    const { sessionAccount, authSessionAccount } = data
+
+    this.verifyToken({ account: sessionAccount, at: authSessionAccount })
+
+    await this.chainAuthService.merge(sessionAccount.address, account)
   }
 
   @SubscribeMessage(enf.events.VERIFY_MESSAGE)
@@ -90,5 +104,22 @@ export class HandlerSockets {
     )
 
     this.emitters.tokens(client, tokens, account)
+    this.emitters.loggedIn(client, account)
+  }
+
+  @SubscribeMessage(enf.events.FINISH_LOGIN)
+  @UseGuards(AccountGuard)
+  async finishLogin(client: Socket, { auth }: Data): Promise<void> {
+    this.verifyToken(auth)
+
+    await this.chainAuthService.login(auth.account)
+  }
+
+  verifyToken(auth: Data['auth']): void {
+    const isAtVerified = this.authService.verifyAT(auth)
+
+    if (!isAtVerified) {
+      throw new HttpException('Wrong signature', HttpStatus.UNAUTHORIZED)
+    }
   }
 }

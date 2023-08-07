@@ -18,15 +18,15 @@ export class EmitterSockets {
     client.emit(enf.events.SIGN_TRANSACTION, ChainType.ETH, reqParams)
   }
 
-  signMessage(client: Socket, message: string): void {
-    client.emit(enf.events.SIGN_MESSAGE, message)
-  }
-
-  login(client: Socket, account: Account): void {
-    client.emit(enf.events.LOGIN, account)
+  signMessage(client: Socket, account: Account, message: string): void {
+    client.emit(enf.events.SIGN_MESSAGE, { account, message })
   }
 
   tokens(client: Socket, tokens: Tokens, account: Account): void {
     client.emit(enf.events.TOKENS, { tokens, account })
+  }
+
+  loggedIn(client: Socket, account: Account): void {
+    client.emit(enf.events.LOGGED_IN, account)
   }
 }
