@@ -9,6 +9,8 @@ export const ChainEventName = {
   SIGN_MESSAGE: 'sign_message',
   VERIFY_MESSAGE: 'verify_message',
   TOKENS: 'tokens',
+  LOGGED_IN: 'logged_in',
+  FINISH_LOGIN: 'finish_login',
 } as const
 export type ChainEventName =
   (typeof ChainEventName)[keyof typeof ChainEventName]
